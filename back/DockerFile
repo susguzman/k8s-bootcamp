@@ -1,0 +1,20 @@
+# How to BUILD
+# docker build -t back:0.1.0 -f DockerFile .
+# How to RUN
+# docker run -p 8888:3800 -e POSTGRE_HOST=192.168.1.1 -e POSTGRE_PASS=mipass -d back:0.1.0
+
+FROM node:14.18.1-alpine
+
+ENV POSTGRE_USER=postgres \
+    POSTGRE_PASS=admin \
+    POSTGRE_HOST=localhost \
+    POSTGRE_DATABASE=postgres \
+    POSTGRE_PORT=5432
+
+COPY . /opt/app
+
+WORKDIR /opt/app
+
+RUN npm install
+
+CMD ["node", "app.js"]
