@@ -1,0 +1,23 @@
+# How to BUILD
+# docker build --build-arg REACT_APP_BACKEND_BASE_URL=http://52.10.30.49:3800 -t front:0.1.0 -f DockerFile .
+# How to RUN
+# docker run -p 8888:80 -d front:0.1.0
+
+FROM node:14.18.1-alpine as compilacion
+
+ARG REACT_APP_BACKEND_BASE_URL=http://localhost:3800
+
+COPY . /opt/app
+
+WORKDIR /opt/app
+
+RUN npm install
+
+RUN npm run build
+
+# Web server
+FROM nginx:1.20.1
+
+COPY --from=compilacion /opt/app/build /usr/share/nginx/html
+
+#CMD ["nginx", "-g", "daemon off;"]
