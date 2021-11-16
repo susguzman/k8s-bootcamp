@@ -15,7 +15,7 @@ const Dashboard = () => {
 
   const updateAllUserAccounts = async () => {
     const idToken = await authCtx.currentUser.getIdToken();
-    let response = await fetch('http://localhost:3800/account', { 
+    let response = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/account`, { 
       method: 'GET',
       headers: { 
         'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ const Dashboard = () => {
 
   const createAccount = async (body) => {
     const idToken = await authCtx.currentUser.getIdToken();
-    let response = await fetch('http://localhost:3800/account', { 
+    let response = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/account`, { 
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ const Dashboard = () => {
   useEffect(() => {
     const getCurrenciesAnAccountTypes = async () => {
       const idToken = await authCtx.currentUser.getIdToken();
-      let response = await fetch('http://localhost:3800/currency', { 
+      let response = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/currency`, { 
         method: 'GET',
         headers: { 
           'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ const Dashboard = () => {
         }
       });
       let currencies = await response.json();
-      response = await fetch('http://localhost:3800/account-type', { 
+      response = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/account-type`, { 
         method: 'GET',
         headers: { 
           'Content-Type': 'application/json',
