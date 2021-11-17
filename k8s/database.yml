@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: database
+  ports:
+  - port: 5432
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+spec:
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      volumes:
+        - name: dbinit-vol
+          configMap:
+            name: db-init
+        - name: postgres-persistent-storage
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+      containers:
+      - name: database
+        image: postgres:14.1
+        env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        ports:
+          - containerPort: 5432
+        volumeMounts:
+          - name: dbinit-vol
+            mountPath: /docker-entrypoint-initdb.d
+          - name: postgres-persistent-storage
+            mountPath: /var/lib/postgresql/data
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-init
+data:
+  init.sql: |
+    CREATE TABLE USUARIO (
+        USUARIO text primary key,
+        CORREO text not null,
+        ADD_FECHA date not null default CURRENT_TIMESTAMP
+    );
+    CREATE TABLE CUENTA_TIPO (
+        CUENTA_TIPO SERIAL primary key,
+        DESCRIPCION text not null unique,
+        ADD_FECHA date not null default CURRENT_TIMESTAMP
+    );
+    CREATE TABLE MONEDA (
+        MONEDA SERIAL primary key, 
+        DESCRIPCION text not null unique,
+        ADD_FECHA date not null default CURRENT_TIMESTAMP
+    );
+    CREATE TABLE CUENTA (
+        CUENTA SERIAL primary key,
+        DESCRIPCION text not null,
+        CUENTA_TIPO integer not null references CUENTA_TIPO(CUENTA_TIPO),
+        MONEDA integer not null references MONEDA(MONEDA),
+        USUARIO text not null references USUARIO(USUARIO),
+        ADD_FECHA date not null default CURRENT_TIMESTAMP
+    );
+    INSERT INTO MONEDA(DESCRIPCION) 
+    VALUES ('GTQ');
+    INSERT INTO MONEDA(DESCRIPCION) 
+    VALUES ('USD');
+    INSERT INTO CUENTA_TIPO(DESCRIPCION) 
+    VALUES ('Efectivo');
+    INSERT INTO CUENTA_TIPO(DESCRIPCION) 
+    VALUES ('Corriente');
+    INSERT INTO CUENTA_TIPO(DESCRIPCION) 
+    VALUES ('Ahorro');
